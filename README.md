@@ -8,6 +8,7 @@ TravelSwipr is a Tinder-inspired travel booking Android application built with J
 - **Tinder-like Swiping Interface**: Swipe right to like a destination, left to reject it.
 - **Saved Destinations**: View and manage all your liked destinations.
 - **Modern UI**: Built with Jetpack Compose for a sleek, modern interface.
+- **AI-Powered Recommendations**: Coming soon - AI sorting and recommendations based on preferences and budget (currently mocked with sample data).
 
 ## Application Structure
 
@@ -41,6 +42,16 @@ The application is structured following MVVM (Model-View-ViewModel) architecture
 - **Image Loading**: Coil
 - **Animation**: Compose Animation APIs for the swipe functionality
 - **State Management**: Kotlin Flow and Compose State
+
+## AI Integration (Coming Soon)
+
+The application is designed to integrate with an AI service that will:
+1. Sort and filter locations based on user preferences
+2. Recommend destinations based on budget constraints
+3. Learn from user swipe patterns to improve recommendations
+4. Optimize travel itineraries for the specified number of days
+
+Currently, the app uses sample data to demonstrate the UI and functionality.
 
 ## Future Enhancements
 
