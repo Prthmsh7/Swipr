@@ -64,3 +64,7 @@ The application is structured following MVVM (Model-View-ViewModel) architecture
 - Flutter SDK
 - Android Studio / VS Code
 - Android emulator or physical device
+
+
+
+Removed the entire code and made the entire repo clean to start a new project
