@@ -42,7 +42,7 @@ The application is structured following MVVM (Model-View-ViewModel) architecture
 - **State Management**: Provider
 - **Image Loading**: Cached Network Image
 - **Animation**: Flutter Card Swiper and Flutter Staggered Animations
-
+  
 ## Future Enhancements
 
 - Integration with a real travel API for live data
