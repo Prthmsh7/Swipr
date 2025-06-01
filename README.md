@@ -19,3 +19,13 @@ Swipr is a Tinder-inspired travel booking Flutter application for Android. The a
 - AI-powered recommendations based on swipe history
 
 Removed the entire code and made the entire repo clean to start a new project.
+
+
+## Dependencies used : (just to keep a track of the things)
+- flutter_card_swiper: ^7.0.2
+
+## Steps to run/test the application:
+- cd swipr
+- flutter clean
+- flutter pub get
+- flutter run -d <device_id>
