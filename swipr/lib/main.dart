@@ -1,9 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
-import 'package:google_fonts/google_fonts.dart';
-
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
 import 'models/destination.dart';
 
 void main() {
@@ -18,10 +16,11 @@ class SwiprApp extends StatelessWidget {
     return MaterialApp(
       title: 'Swipr',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        scaffoldBackgroundColor: const Color(0xFFF8F8F8),
-        textTheme: GoogleFonts.poppinsTextTheme(),
-        useMaterial3: true,
+        primarySwatch: Colors.teal,
+        textTheme: const TextTheme(
+          titleLarge: TextStyle(fontFamily: 'Roboto', fontWeight: FontWeight.bold),
+          bodyMedium: TextStyle(fontFamily: 'Roboto'),
+        ),
       ),
       home: const SwiprHomePage(),
     );
@@ -38,8 +37,16 @@ class SwiprHomePage extends StatefulWidget {
 class _SwiprHomePageState extends State<SwiprHomePage> {
   List<Destination> destinations = [];
   List<Destination> filteredDestinations = [];
-  double _budget = 20000;
-  double _days = 7;
+
+  double maxBudget = 20000;
+  double selectedBudget = 20000;
+
+  int maxDays = 15;
+  int selectedDays = 15;
+
+  int _selectedIndex = 0;
+
+  final CardSwiperController _controller = CardSwiperController();
 
   @override
   void initState() {
@@ -48,132 +55,148 @@ class _SwiprHomePageState extends State<SwiprHomePage> {
   }
 
   Future<void> loadDestinations() async {
-    final String response =
-        await rootBundle.loadString('assets/destinations.json');
-    final List<dynamic> data = json.decode(response);
+    final String response = await rootBundle.loadString('assets/destinations.json');
+    final data = await json.decode(response) as List;
     setState(() {
       destinations = data.map((json) => Destination.fromJson(json)).toList();
-      filterDestinations();
+      filteredDestinations = List.from(destinations);
     });
   }
 
-  void filterDestinations() {
+  void _filterDestinations() {
     setState(() {
-      filteredDestinations = destinations
-          .where((d) => d.budget <= _budget && d.days <= _days)
-          .toList();
+      filteredDestinations = destinations.where((destination) {
+        return destination.budget <= selectedBudget && destination.days <= selectedDays;
+      }).toList();
     });
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  Widget _buildHome() {
+    return Column(
+      children: [
+        // Filters Section
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          child: Column(
+            children: [
+              // Budget Slider
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Budget:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text('₹${selectedBudget.toInt()}'),
+                ],
+              ),
+              Slider(
+                value: selectedBudget,
+                min: 1000,
+                max: maxBudget,
+                divisions: (maxBudget ~/ 1000),
+                label: '₹${selectedBudget.toInt()}',
+                onChanged: (value) {
+                  setState(() {
+                    selectedBudget = value;
+                    _filterDestinations();
+                  });
+                },
+              ),
+              // Days Slider
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Days:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text('$selectedDays'),
+                ],
+              ),
+              Slider(
+                value: selectedDays.toDouble(),
+                min: 1,
+                max: maxDays.toDouble(),
+                divisions: maxDays,
+                label: '$selectedDays',
+                onChanged: (value) {
+                  setState(() {
+                    selectedDays = value.toInt();
+                    _filterDestinations();
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: filteredDestinations.isEmpty
+              ? const Center(child: Text('No destinations match your filters.'))
+              : CardSwiper(
+                  cardsCount: filteredDestinations.length,
+                  cardBuilder: (context, index, realIndex, direction) {
+                    final destination = filteredDestinations[index];
+                    return Card(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      elevation: 6,
+                      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.network(
+                          destination.image,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    );
+                  },
+                  controller: _controller,
+                  onSwipe: (index, directionIndex, direction) {
+                    debugPrint('Swiped card $index in direction $direction');
+                    return true;
+                  },
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFavorites() {
+    return const Center(child: Text('Favorites Page - Coming Soon'));
+  }
+
+  Widget _buildSettings() {
+    return const Center(child: Text('Settings Page - Coming Soon'));
   }
 
   @override
   Widget build(BuildContext context) {
+    List<Widget> pages = [
+      _buildHome(),
+      _buildFavorites(),
+      _buildSettings(),
+    ];
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Swipr", style: TextStyle(fontWeight: FontWeight.bold)),
-        centerTitle: true,
-        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        title: const Text('Swipr'),
       ),
-      body: Column(
-        children: [
-          // Budget Slider
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Max Budget: ₹${_budget.toInt()}',
-                    style: const TextStyle(fontWeight: FontWeight.w600)),
-                Slider(
-                  value: _budget,
-                  min: 5000,
-                  max: 50000,
-                  divisions: 45,
-                  label: _budget.toInt().toString(),
-                  onChanged: (value) {
-                    setState(() {
-                      _budget = value;
-                      filterDestinations();
-                    });
-                  },
-                ),
-                const SizedBox(height: 12),
-                Text('Max Days: ${_days.toInt()}',
-                    style: const TextStyle(fontWeight: FontWeight.w600)),
-                Slider(
-                  value: _days,
-                  min: 1,
-                  max: 15,
-                  divisions: 14,
-                  label: _days.toInt().toString(),
-                  onChanged: (value) {
-                    setState(() {
-                      _days = value;
-                      filterDestinations();
-                    });
-                  },
-                ),
-              ],
-            ),
+      body: pages[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
           ),
-          const SizedBox(height: 10),
-          Expanded(
-            child: filteredDestinations.isEmpty
-                ? const Center(child: Text("No destinations match your criteria."))
-                : CardSwiper(
-                    cardsCount: filteredDestinations.length,
-                    cardBuilder: (context, index, realIndex, cardsCount) {
-                      final destination = filteredDestinations[index];
-                      return Card(
-                        elevation: 8,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        margin: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: ClipRRect(
-                                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                                child: Image.network(
-                                  destination.image,
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                  errorBuilder: (context, error, stackTrace) => const Center(
-                                      child: Icon(Icons.broken_image, size: 48)),
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(destination.name,
-                                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                                  const SizedBox(height: 6),
-                                  Text(destination.description),
-                                  const SizedBox(height: 10),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text("₹${destination.budget}"),
-                                      Text("${destination.days} days"),
-                                    ],
-                                  )
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                    controller: CardSwiperController(),
-                    onSwipe: (index, _, direction) {
-                      debugPrint('Swiped card $index in direction $direction');
-                      return true;
-                    },
-                  ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: 'Favorites',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Settings',
           ),
         ],
       ),
