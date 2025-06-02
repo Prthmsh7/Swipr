@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "436113199266",
+    "project_id": "swipr-x",
+    "storage_bucket": "swipr-x.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:436113199266:android:3fc4a3b6a2a858688287fb",
+        "android_client_info": {
+          "package_name": "com.example.swipr"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAniTkfewQg3wfnz37QSRh3-qmOckX-BzU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
